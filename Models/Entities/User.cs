@@ -10,13 +10,7 @@ namespace obrazo.Models.Entities
         public User() { }
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-
-        public User(string name, string password)
-        {
-            Name = name;
-            Password = password;
-        }
+        public string PasswordHash { get; set; } = string.Empty;
 
         public ICollection<UserMedia> UserMedias { get; set; } = new List<UserMedia>();
     }

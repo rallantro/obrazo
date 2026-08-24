@@ -25,12 +25,17 @@ namespace obrazo.Controller
             var user = Context.Users.Find(id);
             if (user == null)
                 return NotFound();
-            return Ok(user);
+            return Ok(user.Name);
         }
 
         [HttpPost]
         public IActionResult Post([FromBody] User novoUser)
         {
+            if (string.IsNullOrWhiteSpace(novoUser.PasswordHash))
+                return BadRequest("A senha é obrigatória.");
+
+            string HashedPassword = BCrypt.Net.BCrypt.HashPassword(novoUser.PasswordHash, workFactor: 12);
+            novoUser.PasswordHash = HashedPassword;
             Context.Users.Add(novoUser);
             Context.SaveChanges();
             return CreatedAtAction(nameof(Get), new { id = novoUser.Id }, novoUser);

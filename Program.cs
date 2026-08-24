@@ -1,21 +1,60 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using obrazo.Data;
+using obrazo.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Configurar o Banco de Dados (SQLite)
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 2. IMPORTANTE: Adicionar suporte aos Controllers
+
 builder.Services.AddControllers();
 
-// 3. (Opcional) Se quiser usar o Swagger/OpenAPI depois, deixe isso:
 builder.Services.AddOpenApi();
+
+var key = Encoding.UTF8.GetBytes(Key.keyToken);
+
+builder.Services.AddAuthentication( x =>
+{
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(x=>
+{
+    x.RequireHttpsMetadata = false;
+    x.SaveToken = false;
+    x.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidAlgorithms = new[] { SecurityAlgorithms.HmacSha256},
+        ValidateIssuer = false,
+        ValidateAudience = false
+    };
+
+     x.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine($"[JWT] Falha: {context.Exception.Message}");
+            return Task.CompletedTask;
+        },
+        OnTokenValidated = context =>
+        {
+            Console.WriteLine("[JWT] Token validado com sucesso");
+            return Task.CompletedTask;
+        }
+    };
+}
+);
+
 
 var app = builder.Build();
 
-// Configure o pipeline de requisições HTTP
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -23,9 +62,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// 4. IMPORTANTÍSSIMO: Dizer ao app para escutar as rotas dos Controllers
-app.MapControllers();
+app.UseAuthentication();
+app.UseAuthorization();
 
-// (Apague todo o código do WeatherForecast daqui para baixo, ou deixe, mas ele vai responder em /weatherforecast)
+app.MapControllers();
 
 app.Run();

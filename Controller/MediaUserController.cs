@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using obrazo.Data;
@@ -20,27 +22,44 @@ namespace obrazo.Controller
             Context = context;
         }
 
+        [Authorize]
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
+            var userIdClaim = User.FindFirst("userID")?.Value;
+            if (!int.TryParse(userIdClaim, out int UserId))
+                return Unauthorized();
             var userMedia = Context.UserMedias.Where(x => x.Id == id).Include(um => um.Media).FirstOrDefault();
+            
             if (userMedia == null)
                 return NotFound();
+            if (userMedia.UserId != UserId) return Forbid();
             return Ok(userMedia);
         }
 
-        [HttpGet("user/{UserId}")]
-        public IActionResult GetByUser(int UserId)
+        [Authorize]
+        [HttpGet("user")]
+        public IActionResult GetByUser()
         {
+            var UserIdClaim = User.FindFirst("userID")?.Value;
+            if (!int.TryParse(UserIdClaim, out int UserId))
+                return Unauthorized();
             var userMedia = Context.UserMedias.Where(x => x.UserId == UserId).Include(um => um.Media).ToList();
             if (!userMedia.Any())
                 return NotFound();
             return Ok(userMedia);
         }
 
+        [Authorize]
         [HttpPost]
         public IActionResult Post([FromBody] UserMedia novoUserMedia)
         {
+            var userIdClaim = User.FindFirst("userID")?.Value;
+            if (!int.TryParse(userIdClaim, out int userId))
+                return Unauthorized("Token inválido.");
+
+            novoUserMedia.UserId = userId;
+
             if (!ValidateExistence(novoUserMedia, out string errorMessageExistence))
             {
                 return BadRequest(errorMessageExistence);
@@ -58,16 +77,22 @@ namespace obrazo.Controller
             return CreatedAtAction(nameof(Get), new { id = novoUserMedia.Id }, novoUserMedia);
         }
 
+        [Authorize]
         [HttpPut("{id}")]
         public IActionResult Put(int id, [FromBody] UserMedia updated)
         {
+            var userIdClaim = User.FindFirst("userID")?.Value;
+            if (!int.TryParse(userIdClaim, out int userId))
+                return Unauthorized();
+            
+
             if (!ValidateUserMedia(updated, out string errorMessageValid))
             {
                 return BadRequest(errorMessageValid);
             }
             var existing = Context.UserMedias.Find(id);
             if (existing == null) return NotFound();
-
+            if (existing.UserId != userId) return Forbid();
             existing.Nota = updated.Nota;
             existing.Opiniao = updated.Opiniao;
             existing.Status = updated.Status;
@@ -77,11 +102,17 @@ namespace obrazo.Controller
             return Ok(existing);
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
+            var userIdClaim = User.FindFirst("userID")?.Value;
+            if (!int.TryParse(userIdClaim, out int userId))
+                return Unauthorized();
+
             var userMedia = Context.UserMedias.Find(id);
             if (userMedia == null) return NotFound();
+            if (userMedia.UserId != userId) return Forbid();
 
             Context.UserMedias.Remove(userMedia);
             Context.SaveChanges();
@@ -90,11 +121,6 @@ namespace obrazo.Controller
 
         private bool ValidateExistence(UserMedia newUserMedia, out string errorMessage)
         {
-            if (!Context.Users.Any(u => u.Id == newUserMedia.UserId))
-            {
-                errorMessage = "Usuário não encontrado.";
-                return false;
-            }
             if (!Context.Medias.Any(m => m.Id == newUserMedia.MediaId))
             {
                 errorMessage = "Mídia não encontrada.";
