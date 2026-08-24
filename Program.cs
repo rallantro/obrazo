@@ -1,20 +1,21 @@
 using Microsoft.EntityFrameworkCore;
 using obrazo.Data;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
+// 1. Configurar o Banco de Dados (SQLite)
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// 2. IMPORTANTE: Adicionar suporte aos Controllers
+builder.Services.AddControllers();
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+// 3. (Opcional) Se quiser usar o Swagger/OpenAPI depois, deixe isso:
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure o pipeline de requisições HTTP
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -22,28 +23,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+// 4. IMPORTANTÍSSIMO: Dizer ao app para escutar as rotas dos Controllers
+app.MapControllers();
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+// (Apague todo o código do WeatherForecast daqui para baixo, ou deixe, mas ele vai responder em /weatherforecast)
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
