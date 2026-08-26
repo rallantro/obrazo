@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using obrazo.Data;
 using obrazo.Models.Entities;
@@ -19,10 +20,15 @@ namespace obrazo.Controller
             Context = context;
         }
 
-        [HttpGet("{id}")]
-        public IActionResult Get(int id)
+        [Authorize]
+        [HttpGet("me")]
+        public IActionResult Get()
         {
-            var user = Context.Users.Find(id);
+            var UserIdClaim = User.FindFirst("userID")?.Value;
+            if (!int.TryParse(UserIdClaim, out int intID))
+                return BadRequest("O ID deve ser um número inteiro.");
+
+            var user = Context.Users.Find(intID);
             if (user == null)
                 return NotFound();
             return Ok(user.Name);
