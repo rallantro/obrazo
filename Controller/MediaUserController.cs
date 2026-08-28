@@ -6,8 +6,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using obrazo.Data;
 using obrazo.Models.Entities;
+using obrazo.Models.Enum;
 
 namespace obrazo.Controller
 {
@@ -30,7 +32,7 @@ namespace obrazo.Controller
             if (!int.TryParse(userIdClaim, out int UserId))
                 return Unauthorized();
             var userMedia = Context.UserMedias.Where(x => x.Id == id).Include(um => um.Media).FirstOrDefault();
-            
+
             if (userMedia == null)
                 return NotFound();
             if (userMedia.UserId != UserId) return Forbid();
@@ -46,7 +48,29 @@ namespace obrazo.Controller
                 return Unauthorized();
             var userMedia = Context.UserMedias.Where(x => x.UserId == UserId).Include(um => um.Media).ToList();
             if (!userMedia.Any())
-                return NotFound();
+                return Problem(
+                    detail: "Você não possui nenhuma mídia armazenada... :p",
+                    statusCode: StatusCodes.Status404NotFound
+                );
+            return Ok(userMedia);
+        }
+
+        [Authorize]
+        [HttpGet("type/{type}")]
+        public IActionResult GetByType(int type)
+        {
+            var UserIdClaim = User.FindFirst("userID")?.Value;
+            if (!int.TryParse(UserIdClaim, out int UserId))
+                return Unauthorized();
+            var userMedia = Context.UserMedias.Include(um => um.Media).Where(x => x.UserId == UserId && x.Media.Type == (MediaType)type).ToList();
+            string nameType = ((MediaType)type).ToString();
+            if (!userMedia.Any())
+                return Problem(
+                    detail: $"Você não possui nenhum(a) {nameType.ToLower()} armazenado(a)... :p",
+                    statusCode: StatusCodes.Status404NotFound
+                );
+            if (!Enum.IsDefined(typeof(MediaType), type))
+                return BadRequest("Tipo de mídia inválido.");
             return Ok(userMedia);
         }
 
@@ -84,7 +108,7 @@ namespace obrazo.Controller
             var userIdClaim = User.FindFirst("userID")?.Value;
             if (!int.TryParse(userIdClaim, out int userId))
                 return Unauthorized();
-            
+
 
             if (!ValidateUserMedia(updated, out string errorMessageValid))
             {
