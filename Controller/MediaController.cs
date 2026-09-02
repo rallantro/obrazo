@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using obrazo.Data;
 using obrazo.Models.Entities;
+using obrazo.Models.Enum;
 
 namespace obrazo.Controller
 {
@@ -31,16 +32,25 @@ namespace obrazo.Controller
         }
 
         [Authorize]
-        [HttpGet("title/{name}")]
-        public IActionResult GetByName(string name)
+        [HttpGet("search")]
+        public IActionResult Search([FromQuery] string? name, [FromQuery] int? type)
         {
-            var selectMedia = Context.Medias.Where(x => EF.Functions.Like(x.Name, $"%{name}%")).ToList();
+            var selectMedia = Context.Medias.AsQueryable();
+            if (!string.IsNullOrEmpty(name))
+            {
+                selectMedia = selectMedia.Where(x => EF.Functions.Like(x.Name, $"%{name}%"));
+            }
+            if (type != null)
+            {
+                selectMedia = selectMedia.Where(x => x.Type == (MediaType)type);
+            }
+            var resultado = selectMedia.ToList();
             if (!selectMedia.Any())
                 return Problem(
-                    detail: "Não há nenhuma obra com esse nome.",
+                    detail: "Nenhuma obra encontrada com os critérios informados.",
                     statusCode: StatusCodes.Status404NotFound
                 );
-            return Ok(selectMedia);
+            return Ok(resultado);
         }
 
         [HttpPost]
