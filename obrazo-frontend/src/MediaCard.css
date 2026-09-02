@@ -11,6 +11,11 @@
   max-width: 200px;
 }
 
+.media-card:hover{
+  transform: scale(1.05);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.554);
+}
+
 .media-cover {
   height: 200px;
   background: #232636;
