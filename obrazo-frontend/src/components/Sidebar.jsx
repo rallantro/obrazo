@@ -1,9 +1,15 @@
 import '../Sidebar.css';
+import { useNavigate } from 'react-router-dom';
 import LogoIcon from './LogoIcon';
 
 
 
-function Sidebar({ onLogout, onFilterChange, currentType }) {
+function Sidebar({ onLogout, onFilterChange, currentType, onSearch }) {
+  const navigate = useNavigate();
+
+  const goToHome = () => {
+    navigate('/'); 
+  };
 
   return (
     <aside className="sidebar">
@@ -12,8 +18,9 @@ function Sidebar({ onLogout, onFilterChange, currentType }) {
         <span className="logo-text">Obrazo</span>
       </div>
       <nav className="menu">
-        <a href="#" onClick={() => onFilterChange(9)} className={`menu-item ${currentType === 9 ? 'active' : ''}`}>Início</a>
+        <a to="/buscar" href="#" onClick={() => {goToHome()}} className="menu-item">Início</a>
         <span className="menu-category">Categorias</span>
+        <a href="#" onClick={() => onFilterChange(9)} className={`menu-item ${currentType === 9 ? 'active' : ''}`}>Todas</a>
         <a href="#" onClick={() => onFilterChange(3)} className={`menu-item ${currentType === 3 ? 'active' : ''}`}>Filme</a>
         <a href="#" onClick={() => onFilterChange(1)} className={`menu-item ${currentType === 1 ? 'active' : ''}`}>Série</a>
         <a href="#" onClick={() => onFilterChange(0)} className={`menu-item ${currentType === 0 ? 'active' : ''}`}>Livro</a>
