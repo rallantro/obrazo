@@ -56,6 +56,22 @@ namespace obrazo.Controller
         }
 
         [Authorize]
+        [HttpGet("me/title/{name}")]
+        public IActionResult GetByName(string name)
+        {
+            var UserIdClaim = User.FindFirst("userID")?.Value;
+            if (!int.TryParse(UserIdClaim, out int UserId))
+                return Unauthorized();
+            var userMedia = Context.UserMedias.Include(um => um.Media).Where(x => x.UserId == UserId && x.Media.Name.Contains(name)).ToList();
+            if (!userMedia.Any())
+                return Problem(
+                    detail: "Não há nenhuma obra com esse nome.",
+                    statusCode: StatusCodes.Status404NotFound
+                );
+            return Ok(userMedia);
+        }
+
+        [Authorize]
         [HttpGet("type/{type}")]
         public IActionResult GetByType(int type)
         {

@@ -22,17 +22,16 @@ namespace obrazo.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configuração do relacionamento User -> UserMedia (1:N)
             modelBuilder.Entity<UserMedia>()
                 .HasOne(um => um.User)
-                .WithMany() // Se User tiver uma lista de UserMedia, coloque .WithMany(u => u.UserMedias)
+                .WithMany()
                 .HasForeignKey(um => um.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Configuração do relacionamento Media -> UserMedia (1:N)
+           
             modelBuilder.Entity<UserMedia>()
                 .HasOne(um => um.Media)
-                .WithMany() // Se Media tiver uma lista de UserMedia, coloque .WithMany(m => m.UserMedias)
+                .WithMany() 
                 .HasForeignKey(um => um.MediaId)
                 .OnDelete(DeleteBehavior.Cascade);
         }

@@ -1,0 +1,12 @@
+.reviews-feed {
+  background: #181a26;
+  padding: 20px 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.no-reviews {
+  color: #717693;
+  font-style: italic;
+  margin: 8px 0;
+}

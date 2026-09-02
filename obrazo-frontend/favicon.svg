@@ -1,0 +1,10 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fundo do ícone (Card escuro) -->
+  <rect width="40" height="40" rx="12" fill="#181A26" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1"/>
+  
+  <!-- Letra O -->
+  <text x="9" y="28" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="22" fill="#FFFFFF">O</text>
+  
+  <!-- Estrela de 4 pontas no canto superior direito -->
+  <path d="M29 9C29 12 31 14 34 14C31 14 29 16 29 19C29 16 27 14 24 14C27 14 29 12 29 9Z" fill="#F5A623"/>
+</svg>

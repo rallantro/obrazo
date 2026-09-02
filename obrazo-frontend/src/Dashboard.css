@@ -1,0 +1,49 @@
+.dashboard {
+  display: flex;
+  min-height: 100vh;
+  background: #0f111a;
+  align-items: stretch; /* Garante que ambos ocupem a altura total */
+}
+
+.sidebar {
+  flex-shrink: 0; /* IMPEDE A SIDEBAR DE ENCOLHER */
+  width: 240px; /* Largura fixa */
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  /* Remove qualquer margin/padding extra que possa atrapalhar */
+  margin: 0;
+  padding: 24px 16px;
+  background: #181a26;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Espalha os itens */
+}
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+  padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
+  background: #0f111a;
+}
+
+@media (max-width: 900px) {
+  .dashboard {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: static;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .main-content {
+    padding: 16px;
+  }
+}

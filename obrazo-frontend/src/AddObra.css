@@ -1,0 +1,179 @@
+/* AddObra.css */
+
+.add-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #0d0e15;
+  padding: 20px;
+}
+
+.add-card {
+  background: #181a26;
+  border-radius: 24px;
+  padding: 40px 48px;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.add-card h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.add-card .subtitle {
+  color: #a0a5c0;
+  font-size: 0.95rem;
+  margin-bottom: 32px;
+}
+
+.add-card label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #c0c5d8;
+  margin-bottom: 6px;
+}
+
+.add-card input,
+.add-card select,
+.add-card textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  font-size: 1rem;
+  color: #ffffff;
+  background-color: #0f111a;
+  transition: all 0.2s ease;
+  margin-bottom: 20px;
+}
+
+.add-card input:focus,
+.add-card select:focus,
+.add-card textarea:focus {
+  outline: none;
+  border-color: #f5a623;
+  box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.15);
+  background-color: #181a26;
+}
+
+.add-card select {
+  appearance: none;
+  cursor: pointer;
+}
+
+.add-card .btn-submit {
+  width: 100%;
+  padding: 14px;
+  background: #f5a623;
+  border: none;
+  border-radius: 12px;
+  color: #0f111a;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+  margin-top: 8px;
+}
+
+.add-card .btn-submit:hover {
+  background: #e09216;
+}
+
+.add-card .btn-submit:active {
+  transform: scale(0.98);
+}
+
+.mensagem-sucesso {
+  background: #064e3b;
+  color: #a7f3d0;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  margin-top: 16px;
+  border-left: 4px solid #34d399;
+}
+
+.mensagem-erro {
+  background: #7f1d1d;
+  color: #fca5a5;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  margin-top: 16px;
+  border-left: 4px solid #f87171;
+}
+
+.lista-medias {
+  margin-top: 32px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 24px;
+}
+
+.lista-medias h3 {
+  color: #c0c5d8;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.lista-medias ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.lista-medias li {
+  background: #0f111a;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: #e0e5f0;
+  font-size: 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lista-medias li strong {
+  color: #ffffff;
+}
+
+.lista-medias .tipo-badge {
+  background: #2a2d3e;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  color: #a0a5c0;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsivo */
+@media (max-width: 600px) {
+  .add-card {
+    padding: 24px 20px;
+  }
+}
