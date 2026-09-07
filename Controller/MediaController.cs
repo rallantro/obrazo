@@ -32,6 +32,20 @@ namespace obrazo.Controller
         }
 
         [Authorize]
+        [HttpGet("{id}")]
+        public IActionResult GetById(int id)
+        {
+            var media = Context.Medias.Where(x => x.Id == id);
+            if (media == null)
+                return Problem(
+                    detail: "Nenhuma obra encontrada com os critérios informados.",
+                    statusCode: StatusCodes.Status404NotFound
+                );
+            return Ok(media);
+
+        }
+
+        [Authorize]
         [HttpGet("search")]
         public IActionResult Search([FromQuery] string? name, [FromQuery] int? type)
         {
