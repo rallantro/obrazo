@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import TopBar from '../components/TopBar';
 import MediaGrid from '../components/MediaGrid';
+import Sidebar from '../components/Sidebar';
 
 function Buscar({ token, onLogout }) {
   const [search, setSearch] = useState('');
   const [erro, setErro] = useState('');
+  const [type, setType] = useState(9);
   const [medias, setMedias] = useState([]);
   const mediasOrdenadas = [...medias].sort((a, b) => a.name.localeCompare(b.name));
 
@@ -12,13 +14,18 @@ function Buscar({ token, onLogout }) {
     setSearch(newSearch);
   }
 
+  async function handleFilterChange(newType) {
+    setType(newType);
+  }
+
 
   const pesquisarMedias = async (name) => {
     try {
-      let link = 'http://localhost:5062/Media';
-      if (name != '') {
-        link = 'http://localhost:5062/Media/title/' + name;
-      }
+      const params = new URLSearchParams();
+      if (search) params.append('name', search);
+      if (type !== 9) params.append('type', type);
+
+      const link = `http://localhost:5062/Media/search?${params.toString()}`;
       const response = await fetch(link, {
         method: 'GET',
         headers: {
@@ -29,6 +36,7 @@ function Buscar({ token, onLogout }) {
       if (response.ok) {
         const data = await response.json();
         setMedias(data);
+        setErro(null);
       } else if (response.status === 404) {
         const msg = await response.json();
         setErro(msg.detail);
@@ -41,14 +49,19 @@ function Buscar({ token, onLogout }) {
 
   useEffect(() => {
     pesquisarMedias(search);
-  }, [search]);
+  }, [search, type]);
 
   return (
     <div className="dashboard">
+      <Sidebar onLogout={onLogout} onFilterChange={handleFilterChange} currentType={type}/>
       <div className="main-content">
-        <TopBar showButton={false} onSearchChange={handleSearchChange}/>
-        <MediaGrid medias={medias.slice(-5).reverse()}  name="Últimas adicionadas" isUserCard={false}/>
-        <MediaGrid medias={mediasOrdenadas} name="Todas as Obras" isUserCard={false} />
+        <TopBar showButton={false} onSearchChange={handleSearchChange} />
+        {!erro && (
+          <>
+            <MediaGrid medias={medias.slice(-6).reverse()} name="Últimas adicionadas" isUserCard={false} />
+            <MediaGrid medias={mediasOrdenadas} name="Todas as Obras" isUserCard={false} />
+          </>
+        )}
       </div>
     </div>
   );

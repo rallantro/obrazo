@@ -96,7 +96,6 @@ function Dashboard({ token, onLogout }) {
         <Sidebar onLogout={onLogout} onFilterChange={handleFilterChange} currentType={type} />
         <div className="main-content">
           <TopBar showButton={true}/>
-          <p>Mostrando {type}!</p>
           {erro && <div className="erro-mensagem">{erro}</div>}
 
         </div>
