@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Home from './pages/Home';
+import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AddObra from './pages/AddObra';
@@ -31,6 +32,18 @@ function App() {
             !token ? (
               <div className="home-page">
                 <Home onLogin={handleLogin} />
+              </div>
+            ) : (
+              <Dashboard token={token} onLogout={handleLogout} />
+            )
+          }
+        />
+        <Route
+          path='/cadastro'
+          element={
+            !token ? (
+              <div className="home-page">
+                <Register/>
               </div>
             ) : (
               <Dashboard token={token} onLogout={handleLogout} />

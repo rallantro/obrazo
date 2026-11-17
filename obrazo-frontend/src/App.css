@@ -130,6 +130,16 @@ body {
   margin-bottom: 15px;
 }
 
+.sucesso-mensagem {
+  background: #f0fdf4; 
+  color: #16a34a;      
+  border: 1px solid #bbf7d0; 
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 15px;
+}
+
 .btn-login {
   width: 100%;
   padding: 12px;
@@ -144,11 +154,15 @@ body {
 }
 
 .btn-login:hover {
-  background: #e09216;
+  background: #f3e5cf;
 }
 
 .btn-login:active {
   transform: scale(0.98);
+}
+
+.btn-login:disabled{
+  opacity: 0.4;
 }
 
 .register-link {
