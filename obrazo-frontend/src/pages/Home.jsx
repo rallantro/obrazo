@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 function Home({ onLogin }) {
   const [nome, setNome] = useState('');
@@ -66,7 +67,7 @@ function Home({ onLogin }) {
           {erro && <div className="erro-mensagem">{erro}</div>}
           <button type="submit" className="btn-login">Entrar</button>
           <p className="register-link">
-            Ainda não tem conta? <a href="#">Crie uma agora</a> (em breve)
+            Ainda não tem conta? <Link to="/cadastro">Crie uma agora</Link>
           </p>
         </form>
       </div>
