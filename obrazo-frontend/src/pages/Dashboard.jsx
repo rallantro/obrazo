@@ -61,6 +61,7 @@ function Dashboard({ token, onLogout }) {
           setMedias(medias);
         } else if (response.status === 404) {
           const msg = await response.json();
+          setMedias([]);
           setErro(msg.detail);
         } else if (response.status === 401) {
           localStorage.removeItem('token');
@@ -93,11 +94,10 @@ function Dashboard({ token, onLogout }) {
   } else if (total === 0) {
     return (
       <div className="dashboard">
-        <Sidebar onLogout={onLogout} onFilterChange={handleFilterChange} currentType={type} />
+        <Sidebar onLogout={onLogout} onFilterChange={handleFilterChange} currentType={type} onSearch={false} />
         <div className="main-content">
-          <TopBar showButton={true}/>
+          <TopBar showButton={true} />
           {erro && <div className="erro-mensagem">{erro}</div>}
-
         </div>
       </div>
     );
@@ -107,9 +107,9 @@ function Dashboard({ token, onLogout }) {
 
     return (
       <div className="dashboard">
-        <Sidebar onLogout={onLogout} />
+        <Sidebar onLogout={onLogout} onFilterChange={handleFilterChange} currentType={type} onSearch={false} />
         <div className="main-content">
-          <TopBar showButton={true}/>
+          <TopBar showButton={true} />
           <StatsBar total={total} mediaNota={mediaNota} favorito={favorito} />
           <MediaGrid medias={medias.slice(-5).reverse()} isUserCard={true} token={token} />
           <ReviewsFeed medias={medias.filter(m => m.opiniao && m.opiniao.length > 0).reverse()} token={token} />

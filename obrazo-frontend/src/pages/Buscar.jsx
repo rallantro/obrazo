@@ -56,7 +56,7 @@ function Buscar({ token, onLogout }) {
   return (
     <div className="dashboard">
       {obraSelecionada && <AvaliarObra media={obraSelecionada} token={token} onClose={() => setObraSelecionada(null)} />}
-      <Sidebar onLogout={onLogout} onFilterChange={handleFilterChange} currentType={type} />
+      <Sidebar onLogout={onLogout} onFilterChange={handleFilterChange} currentType={type} onSearch={true}/>
       <div className="main-content">
         <TopBar showButton={false} onSearchChange={handleSearchChange} />
         {!erro && (
