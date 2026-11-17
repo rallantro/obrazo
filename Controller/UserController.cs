@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using obrazo.Data;
+using obrazo.DTO;
 using obrazo.Models.Entities;
 
 namespace obrazo.Controller
@@ -35,16 +36,19 @@ namespace obrazo.Controller
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody] User novoUser)
+        public IActionResult Post([FromBody] RegisterRequest registerRequest)
         {
-            if (string.IsNullOrWhiteSpace(novoUser.PasswordHash))
-                return BadRequest("A senha é obrigatória.");
-
-            string HashedPassword = BCrypt.Net.BCrypt.HashPassword(novoUser.PasswordHash, workFactor: 12);
-            novoUser.PasswordHash = HashedPassword;
-            Context.Users.Add(novoUser);
+            if(Context.Users.Any(x => x.Name == registerRequest.Name))
+                return BadRequest("Nome de Usuário em uso.");
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(registerRequest.Password, workFactor: 12);
+            var user = new User
+            {
+                Name = registerRequest.Name,
+                PasswordHash = hashedPassword
+            };
+            Context.Users.Add(user);
             Context.SaveChanges();
-            return CreatedAtAction(nameof(Get), new { id = novoUser.Id }, novoUser);
+            return StatusCode(201, new { id = user.Id, name = user.Name });
         }
     }
 }
