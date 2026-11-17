@@ -70,9 +70,24 @@ namespace obrazo.Controller
         [HttpPost]
         public IActionResult Post([FromBody] Media novaMedia)
         {
+            if (!ValidateDuplicate(novaMedia, out string errorMessageValid))
+            {
+                return BadRequest(errorMessageValid);
+            }
             Context.Medias.Add(novaMedia);
             Context.SaveChanges();
             return CreatedAtAction(nameof(Get), new { id = novaMedia.Id }, novaMedia);
+        }
+
+        private bool ValidateDuplicate(Media media, out string errorMessage)
+        {
+            if (Context.Medias.Any(x => x.Name.ToLower() == media.Name.ToLower() && x.Type == media.Type))
+            {
+                errorMessage = "Esta mídia já está cadastrada";
+                return false;
+            }
+            errorMessage = "";
+            return true;
         }
     }
 }

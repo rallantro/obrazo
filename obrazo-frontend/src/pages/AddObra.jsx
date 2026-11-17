@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'; 
+import { useState, useEffect } from 'react';
 import '../AddObra.css';
 
 function AddObra() {
@@ -37,17 +37,18 @@ function AddObra() {
       if (response.ok) {
         setMensagem('Mídia adicionada com sucesso!');
         setNome('');
-        carregarMedias(); 
-      } else {
-        setMensagem('Erro ao adicionar mídia.');
+        carregarMedias();
+      } else{
+        const msg = await response.text();
+        setMensagem(msg);
       }
     } catch (error) {
       console.error(error);
-      setMensagem('Erro de conexão.');
+      setMensagem("Erro de conexão");
     }
   };
 
- return (
+  return (
     <div className="add-container">
       <div className="add-card">
         <h2>Nova Obra</h2>
@@ -90,7 +91,7 @@ function AddObra() {
               <li key={media.id}>
                 <strong>{media.name}</strong>
                 <span className="tipo-badge">
-                  {['LIVRO','SERIE','ANIME','FILME','MANGA','DESENHO','JOGO'][media.type] || media.type}
+                  {['LIVRO', 'SERIE', 'ANIME', 'FILME', 'MANGA', 'DESENHO', 'JOGO'][media.type] || media.type}
                 </span>
               </li>
             ))}
