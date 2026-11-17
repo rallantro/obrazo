@@ -111,8 +111,8 @@ function Dashboard({ token, onLogout }) {
         <div className="main-content">
           <TopBar showButton={true}/>
           <StatsBar total={total} mediaNota={mediaNota} favorito={favorito} />
-          <MediaGrid medias={medias.slice(-5).reverse()} />
-          <ReviewsFeed medias={medias.filter(m => m.opiniao && m.opiniao.length > 0)} />
+          <MediaGrid medias={medias.slice(-5).reverse()} isUserCard={true} token={token} />
+          <ReviewsFeed medias={medias.filter(m => m.opiniao && m.opiniao.length > 0).reverse()} token={token} />
         </div>
       </div>
     );

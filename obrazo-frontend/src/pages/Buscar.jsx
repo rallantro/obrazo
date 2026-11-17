@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import TopBar from '../components/TopBar';
 import MediaGrid from '../components/MediaGrid';
 import Sidebar from '../components/Sidebar';
+import AvaliarObra from '../components/AvaliarObra';
 
 function Buscar({ token, onLogout }) {
   const [search, setSearch] = useState('');
@@ -9,6 +10,7 @@ function Buscar({ token, onLogout }) {
   const [type, setType] = useState(9);
   const [medias, setMedias] = useState([]);
   const mediasOrdenadas = [...medias].sort((a, b) => a.name.localeCompare(b.name));
+  const [obraSelecionada, setObraSelecionada] = useState(null);
 
   async function handleSearchChange(newSearch) {
     setSearch(newSearch);
@@ -53,13 +55,14 @@ function Buscar({ token, onLogout }) {
 
   return (
     <div className="dashboard">
-      <Sidebar onLogout={onLogout} onFilterChange={handleFilterChange} currentType={type}/>
+      {obraSelecionada && <AvaliarObra media={obraSelecionada} token={token} onClose={() => setObraSelecionada(null)} />}
+      <Sidebar onLogout={onLogout} onFilterChange={handleFilterChange} currentType={type} />
       <div className="main-content">
         <TopBar showButton={false} onSearchChange={handleSearchChange} />
         {!erro && (
           <>
-            <MediaGrid medias={medias.slice(-6).reverse()} name="Últimas adicionadas" isUserCard={false} />
-            <MediaGrid medias={mediasOrdenadas} name="Todas as Obras" isUserCard={false} />
+            <MediaGrid medias={medias.slice(-6).reverse()} name="Últimas adicionadas" isUserCard={false} onCardClick={setObraSelecionada} />
+            <MediaGrid medias={mediasOrdenadas} name="Todas as Obras" isUserCard={false} onCardClick={setObraSelecionada} />
           </>
         )}
       </div>
