@@ -14,17 +14,17 @@ O **Obrazo** é uma plataforma web desenvolvida para organizar coleções pessoa
 ---
 ## Sobre o Projeto
 
-O projeto nasceu de um pensamento cotidiano, a sensação de já ter visto algo, mas não se lembrar exatamente qual obra é, nem como ela era. Para resolver isso, me propus a criar uma plataforma, na qual eu seria capaz de armazenar meus comentários, minhas avaliações, o status de uma obra e quando eu a vi.
+O projeto nasceu de um pensamento cotidiano, a sensação de já ter visto algo, mas não se lembrar exatamente qual obra é, nem como ela era. Para resolver isso, me propus a criar uma plataforma, na qual eu seria capaz de armazenar meus comentários, minhas avaliações, o status de uma obra e quando a consumir.
 
 ---
 ### Funcionalidades
 
 Para concretizar o projeto, foram desenvolvidas as seguintes funcionalidades:
 - Gerenciamento de obras e coleções pessoais (CRUD)
-- Autenticação e gerenciamento de usuários
-- Autenticação e proteção de credenciais
-- Busca e filtragem por nome e categoria
-- Diferentes interfaces para as obras públicas e as avaliações privadas dos usuários
+- Gerenciamento de usuários (cadastro e login).
+- Proteção de credenciais utilizando JWT e BCrypt.
+- Busca e filtragem por nome e categoria.
+- Diferentes interfaces para as obras públicas e as avaliações privadas dos usuários.
 
 ![Demonstração Dashboard](docs/imgs/dashboard.gif)
 *Dashboard do usuário*
@@ -190,7 +190,7 @@ npm run dev
   <p>As consultas ao banco de dados <code>SQLite</code> são realizadas utilizando <i>LINQ</i> integrado ao <i>Entity Framework Core</i>. Essa abordagem permite expressar operações de consulta diretamente em <i>C#.</i></p>
 
   <b>1. SQLite</b>
-  <p> Esse banco foi escolhido, principalmente pela sua leveza e portabilidade. Afinal, ao não exigir um servidor de banco de dados à parte, este banco permite que a plataforma armazene os dados localmente, dentro da base, com pouco custo operacional e de desempenho, além de facilitar a distribuição do projeto.</p>
+  <p> Esse banco foi escolhido, principalmente pela sua leveza e portabilidade. Afinal, ao não exigir um servidor de banco de dados à parte, este banco permite que a plataforma armazene os dados localmente, com baixo custo operacional e de desempenho, além de facilitar a distribuição do projeto.</p>
 
   <b>2. Modelagem e Relacionamento entre Tabelas</b>
   <b>Diagrama de Relacionamento</b>
@@ -228,9 +228,7 @@ erDiagram
 
 <b>3. Exclusão em Cascata</b>
 
-<p>Os relacionamentos configurados no `AppDbContext` utilizam o comportamento `DeleteBehavior.Cascade`. Isso significa que, ao excluir um usuário ou uma obra, os registros correspondentes em `UserMedia` também são removidos automaticamente pelo banco de dados, preservando a integridade referencial e evitando registros associados a entidades inexistentes.</p>
-
-
+<p>Os relacionamentos configurados no <i>AppDbContext</i> utilizam o comportamento <code>DeleteBehavior.Cascade</code>. Isso significa que, ao excluir um usuário ou uma obra, os registros correspondentes em <code>UserMedia</code> (as avaliações dos usuários) também são removidos automaticamente pelo banco de dados, preservando a integridade referencial e evitando registros associados a entidades inexistentes.</p>
 
 </details>
 
@@ -244,7 +242,7 @@ Existem muitas melhorias a serem feitas no projeto. Por isso, deixo aqui os pró
 - **Testes Automatizados:** Implementar testes unitários (provavelmente xUnit) para a API.
 - **Deploy e CI/CD:** Configurar pipeline de CI/CD (GitHub Actions) para rodar testes e build.
 #### Melhorias de UX:
-- **Upload de Imagens:** Permitir que o usuário faça um upload de pôsters ou capas das obras. 
+- **Upload de Imagens:** Permitir que o usuário faça um upload de pôsteres ou capas das obras. 
 - **Modo Escuro / Modo Claro:** Permitir ao usuário alternar entre o esquema de cores da plataforma. 
 - **Sistema de Favoritos** Permitir ao usuário marcar obras como favoritas.
 - **Lista de Desejos:** A API e o Banco de dados já possuem uma categoria de obras "Desejadas", mas estas não estão separadas das demais avaliações, assim, criar uma seção preparada para a lista de desejos.
