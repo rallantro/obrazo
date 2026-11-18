@@ -31,7 +31,7 @@ namespace obrazo.Controller
             bool valid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
             if (!valid)
             {
-                return Unauthorized("Deu senha invália." + "O que chegou foi:" + user.PasswordHash);
+                return Unauthorized(new { message = "Usuário ou senha inválidos." });
             }
             
             return Ok( new { userId = user.Id, message = "Login bem-sucedido!", token = TokenService.GerarToken(user)});
