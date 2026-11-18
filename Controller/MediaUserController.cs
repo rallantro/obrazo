@@ -72,6 +72,31 @@ namespace obrazo.Controller
         }
 
         [Authorize]
+        [HttpGet("search")]
+        public IActionResult Search([FromQuery] string? name, [FromQuery] int? type)
+        {
+            var UserIdClaim = User.FindFirst("userID")?.Value;
+             if (!int.TryParse(UserIdClaim, out int UserId))
+                return Unauthorized();
+            var selectMedia = Context.UserMedias.AsQueryable().Include(um => um.Media).Where(x => x.UserId == UserId);
+            if (!string.IsNullOrEmpty(name))
+            {
+                selectMedia = selectMedia.Where(x => EF.Functions.Like(x.Media.Name, $"%{name}%"));
+            }
+            if (type != null)
+            {
+                selectMedia = selectMedia.Where(x => x.Media.Type == (MediaType)type);
+            }
+            var resultado = selectMedia.ToList();
+            if (!selectMedia.Any())
+                return Problem(
+                    detail: "Nenhuma obra encontrada com os critérios informados.",
+                    statusCode: StatusCodes.Status404NotFound
+                );
+            return Ok(resultado);
+        }
+
+        [Authorize]
         [HttpGet("type/{type}")]
         public IActionResult GetByType(int type)
         {
