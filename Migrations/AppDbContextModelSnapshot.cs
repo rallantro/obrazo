@@ -69,8 +69,8 @@ namespace obrazo.Migrations
                     b.Property<int?>("MediaId1")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Nota")
-                        .HasColumnType("INTEGER");
+                    b.Property<double>("Nota")
+                        .HasColumnType("REAL");
 
                     b.Property<string>("Opiniao")
                         .IsRequired()
