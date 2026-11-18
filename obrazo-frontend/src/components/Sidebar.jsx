@@ -18,7 +18,7 @@ function Sidebar({ onLogout, onFilterChange, currentType, onSearch }) {
         <span className="logo-text">Obrazo</span>
       </div>
       <nav className="menu">
-        <a to="/buscar" href="#" onClick={() => {goToHome()}} className="menu-item">Início</a>
+        <a to="/buscar" href="#" onClick={() => {goToHome()}} className={`menu-item ${!onSearch ? 'active' : ""}`}>Minha Coleção</a>
         <span className="menu-category">Categorias</span>
         <a href="#" onClick={() => onFilterChange(9)} className={`menu-item ${currentType === 9 ? 'active' : ''}`}>Todas</a>
         <a href="#" onClick={() => onFilterChange(3)} className={`menu-item ${currentType === 3 ? 'active' : ''}`}>Filme</a>

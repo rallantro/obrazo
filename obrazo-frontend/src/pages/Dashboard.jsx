@@ -3,18 +3,57 @@ import TopBar from '../components/TopBar';
 import StatsBar from '../components/StatsBar';
 import MediaGrid from '../components/MediaGrid';
 import ReviewsFeed from '../components/ReviewsFeed';
+import AtualizarObra from '../components/AtualizarObra';
 import '../Dashboard.css';
 import { useEffect, useState } from 'react';
 
 function Dashboard({ token, onLogout }) {
+  const [search, setSearch] = useState('');
   const [user, setUser] = useState('');
   const [erro, setErro] = useState('');
   const [type, setType] = useState(9);
   const [medias, setMedias] = useState([]);
+  const [obraSelecionada, setObraSelecionada] = useState(null);
+
+
+  async function handleSearchChange(newSearch) {
+    setSearch(newSearch);
+  }
+  const pesquisarMedias = async (name) => {
+    try {
+      const params = new URLSearchParams();
+      if (search) params.append('name', search);
+      if (type !== 9) params.append('type', type);
+
+      const link = `http://localhost:5062/MediaUser/search?${params.toString()}`;
+      const response = await fetch(link, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setMedias(data);
+        setErro(null);
+      } else if (response.status === 404) {
+        setMedias([]);
+        const msg = await response.json();
+        setErro(msg.detail);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar as obras:', error);
+    }
+  };
 
   async function handleFilterChange(newType) {
     setType(newType);
   }
+
+  useEffect(() => {
+    pesquisarMedias(search);
+  }, [search, type]);
 
   useEffect(() => {
     async function buscarDados() {
@@ -91,28 +130,23 @@ function Dashboard({ token, onLogout }) {
         </div>
       </div>
     );
-  } else if (total === 0) {
-    return (
-      <div className="dashboard">
-        <Sidebar onLogout={onLogout} onFilterChange={handleFilterChange} currentType={type} onSearch={false} />
-        <div className="main-content">
-          <TopBar showButton={true} />
-          {erro && <div className="erro-mensagem">{erro}</div>}
-        </div>
-      </div>
-    );
   } else {
-    const mediaNota = (medias.reduce((acc, m) => acc + m.nota, 0) / total).toFixed(1);
-    const favorito = medias.reduce((a, b) => a.nota > b.nota ? a : b);
-
+    let mediaNota = 0;
+    let favorito = null;
+    if (total > 0) {
+      mediaNota = (medias.reduce((acc, m) => acc + m.nota, 0) / total).toFixed(1);
+      favorito = medias.reduce((a, b) => a.nota > b.nota ? a : b);
+    }
     return (
       <div className="dashboard">
+        {obraSelecionada && <AtualizarObra media={obraSelecionada} token={token} onClose={() => setObraSelecionada(null)} />}
         <Sidebar onLogout={onLogout} onFilterChange={handleFilterChange} currentType={type} onSearch={false} />
         <div className="main-content">
-          <TopBar showButton={true} />
-          <StatsBar total={total} mediaNota={mediaNota} favorito={favorito} />
-          <MediaGrid medias={medias.slice(-5).reverse()} isUserCard={true} token={token} />
-          <ReviewsFeed medias={medias.filter(m => m.opiniao && m.opiniao.length > 0).reverse()} token={token} />
+          <TopBar showButton={true} onSearchChange={handleSearchChange} />
+          {erro && <div className="erro-mensagem">{erro}</div>}
+          {total > 0 && (<><StatsBar total={total} mediaNota={mediaNota} favorito={favorito} />
+            <MediaGrid medias={medias.toReversed()} isUserCard={true} onCardClick={setObraSelecionada} token={token} />
+            <ReviewsFeed medias={medias.filter(m => m.opiniao && m.opiniao.length > 0).reverse()} token={token} /></>)}
         </div>
       </div>
     );
