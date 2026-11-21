@@ -118,8 +118,6 @@ cd obrazo
 
 **2. Rodando o Backend (API .NET):**
 ```bash
-# Navegue até a pasta da API (ajuste o caminho se necessário)
-cd backend 
 
 # Restaure as dependências e aplique as migrations do banco
 dotnet restore
@@ -134,7 +132,7 @@ dotnet run
 Abra um **novo terminal** e execute:
 ```bash
 # Navegue até a pasta do frontend
-cd frontend
+cd obrazo-frontend
 
 # Instale as dependências
 npm install
@@ -219,7 +217,7 @@ erDiagram
         int Id PK
         int UserId FK
         int MediaId FK
-        int Nota
+        double Nota
         string Opiniao
         int Status
         datetime DataAssistiu
