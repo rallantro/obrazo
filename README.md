@@ -164,6 +164,40 @@ npm run dev
   <b>4. Nota sobre a Chave de Assinatura (Demonstração):</b><br>
 
   A chave secreta (<code>Key.cs</code>) está no código apenas para fins de demonstração e facilidade de execução do projeto. Em um ambiente de produção real, essa chave seria movida para <i>Variáveis de Ambiente</i> ou <i>User Secrets</i> do .NET, garantindo que credenciais não vazem no controle de versão.
+
+  ```mermaid
+  sequenceDiagram
+    autonumber
+    actor User as Usuário (React)
+    participant DTO as DTO (LoginRequest)
+    participant Auth as AuthController
+    participant DB as SQLite
+    participant Pass as PasswordService
+    participant Token as TokenService
+
+    User->>DTO: Envia JSON (Name, Password)
+    
+    Note over DTO: Barreira de Segurança<br>A API recebe um DTO específico para a operação, evitando expor diretamente a estrutura da entidade User.
+    
+    DTO->>Auth: Dados prontos
+    Auth->>DB: Busca usuário (FirstOrDefault)
+    DB-->>Auth: Retorna User (com PasswordHash)
+    
+    Auth->>Pass: VerifyPassword(senhaDigitada, hashDoBanco)
+    
+    Note over Pass: BCrypt.Verify()<br>Compara a senha com o hash armazenado
+    
+    Pass-->>Auth: Retorna true/false
+    
+    alt Senha Inválida
+        Auth-->>User: 401 Unauthorized (Mensagem genérica)
+    else Senha Válida
+        Auth->>Token: GerarToken(user)
+        Note over Token: Cria JWT assinado<br>Expira em 1 hora
+        Token-->>Auth: Retorna TokenString
+        Auth-->>User: 200 OK (Token JWT)
+    end
+  ```
 </details>
 
 <details>
