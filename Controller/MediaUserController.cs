@@ -107,6 +107,10 @@ namespace obrazo.Controller
             var UserIdClaim = User.FindFirst("userID")?.Value;
             if (!int.TryParse(UserIdClaim, out int UserId))
                 return Unauthorized();
+            if (!Enum.IsDefined(typeof(MediaType), type))
+            {
+                return BadRequest("Tipo de mídia inválido.");
+            }
             var userMedia = Context.UserMedias.Include(um => um.Media).Where(x => x.UserId == UserId && x.Media.Type == (MediaType)type).ToList();
             string nameType = ((MediaType)type).ToString();
             if (!userMedia.Any())
@@ -114,8 +118,6 @@ namespace obrazo.Controller
                     detail: $"Você não possui nenhum(a) {nameType.ToLower()} armazenado(a)... :p",
                     statusCode: StatusCodes.Status404NotFound
                 );
-            if (!Enum.IsDefined(typeof(MediaType), type))
-                return BadRequest("Tipo de mídia inválido.");
             return Ok(userMedia);
         }
 
@@ -212,6 +214,11 @@ namespace obrazo.Controller
 
         private bool ValidateUserMedia(UserMedia newUserMedia, out string errorMessage)
         {
+            if (!Enum.IsDefined(typeof(MediaStatus), newUserMedia.Status))
+            {
+                errorMessage = "Status da mídia inválido.";
+                return false;
+            }
             if (newUserMedia.Nota < 0 || newUserMedia.Nota > 5)
             {
                 errorMessage = "A nota deve ser entre 0 e 5.";

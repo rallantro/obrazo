@@ -61,7 +61,7 @@ namespace obrazo.Controller
                 {
                     return BadRequest("Tipo de mídia inválido.");
                 }
-                selectMedia = selectMedia.Where(x => x.Type == (MediaType)type);
+                selectMedia = selectMedia.Where(x => x.Type == (MediaType)type.Value);
             }
             var resultado = selectMedia.ToList();
             if (resultado.Count == 0)
