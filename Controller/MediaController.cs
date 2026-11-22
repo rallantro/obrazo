@@ -50,16 +50,21 @@ namespace obrazo.Controller
         public IActionResult Search([FromQuery] string? name, [FromQuery] int? type)
         {
             var selectMedia = Context.Medias.AsQueryable();
-            if (!string.IsNullOrEmpty(name))
+
+            if (!string.IsNullOrWhiteSpace(name))
             {
                 selectMedia = selectMedia.Where(x => EF.Functions.Like(x.Name, $"%{name}%"));
             }
             if (type != null)
             {
+                if (!Enum.IsDefined(typeof(MediaType), type.Value))
+                {
+                    return BadRequest("Tipo de mídia inválido.");
+                }
                 selectMedia = selectMedia.Where(x => x.Type == (MediaType)type);
             }
             var resultado = selectMedia.ToList();
-            if (!selectMedia.Any())
+            if (resultado.Count == 0)
                 return Problem(
                     detail: "Nenhuma obra encontrada com os critérios informados.",
                     statusCode: StatusCodes.Status404NotFound
