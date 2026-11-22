@@ -35,7 +35,7 @@ namespace obrazo.Controller
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            var media = Context.Medias.Where(x => x.Id == id);
+            var media = Context.Medias.Where(x => x.Id == id).FirstOrDefault();
             if (media == null)
                 return Problem(
                     detail: "Nenhuma obra encontrada com os critérios informados.",
@@ -67,6 +67,7 @@ namespace obrazo.Controller
             return Ok(resultado);
         }
 
+        [Authorize]
         [HttpPost]
         public IActionResult Post([FromBody] Media novaMedia)
         {

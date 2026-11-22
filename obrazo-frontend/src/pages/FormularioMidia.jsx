@@ -30,7 +30,10 @@ function FormularioMidia() {
     try {
       const response = await fetch('http://localhost:5062/Media', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
         body: JSON.stringify(novaMidia)
       });
 
