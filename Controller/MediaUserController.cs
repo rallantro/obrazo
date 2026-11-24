@@ -47,7 +47,7 @@ namespace obrazo.Controller
             if (!int.TryParse(UserIdClaim, out int UserId))
                 return Unauthorized();
             var userMedia = Context.UserMedias.Where(x => x.UserId == UserId).Include(um => um.Media).ToList();
-            if (!userMedia.Any())
+            if (userMedia.Count == 0)
                 return Problem(
                     detail: "Você não possui nenhuma mídia armazenada... :p",
                     statusCode: StatusCodes.Status404NotFound
@@ -63,7 +63,7 @@ namespace obrazo.Controller
             if (!int.TryParse(UserIdClaim, out int UserId))
                 return Unauthorized();
             var userMedia = Context.UserMedias.Include(um => um.Media).Where(x => x.UserId == UserId && x.Media.Name.Contains(name)).ToList();
-            if (!userMedia.Any())
+            if (userMedia.Count == 0)
                 return Problem(
                     detail: "Não há nenhuma obra com esse nome.",
                     statusCode: StatusCodes.Status404NotFound
@@ -113,7 +113,7 @@ namespace obrazo.Controller
             }
             var userMedia = Context.UserMedias.Include(um => um.Media).Where(x => x.UserId == UserId && x.Media.Type == (MediaType)type).ToList();
             string nameType = ((MediaType)type).ToString();
-            if (!userMedia.Any())
+            if (userMedia.Count == 0)
                 return Problem(
                     detail: $"Você não possui nenhum(a) {nameType.ToLower()} armazenado(a)... :p",
                     statusCode: StatusCodes.Status404NotFound
