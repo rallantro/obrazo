@@ -139,7 +139,7 @@ function Dashboard({ token, onLogout }) {
     }
     return (
       <div className="dashboard">
-        {obraSelecionada && <AtualizarObra media={obraSelecionada} token={token} onClose={() => setObraSelecionada(null)} />}
+        {obraSelecionada && <AtualizarObra media={obraSelecionada} token={token} onClose={() => {setObraSelecionada(null); pesquisarMedias(search);}} />}
         <Sidebar onLogout={onLogout} onFilterChange={handleFilterChange} currentType={type} onSearch={false} />
         <div className="main-content">
           <TopBar showButton={true} onSearchChange={handleSearchChange} />
