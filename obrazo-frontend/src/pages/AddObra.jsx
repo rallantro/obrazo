@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import '../AddObra.css';
 
-function AddObra({token}) {
+function AddObra({ token, onLogout }) {
   const [nome, setNome] = useState('');
   const [tipo, setTipo] = useState(0);
   const [mensagem, setMensagem] = useState('');
@@ -13,6 +13,11 @@ function AddObra({token}) {
       const data = await response.json();
       setMedias(data);
     } catch (error) {
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        onLogout();
+        return;
+      }
       console.error('Erro ao carregar mídias:', error);
     }
   };
@@ -36,7 +41,11 @@ function AddObra({token}) {
         },
         body: JSON.stringify(novaMidia)
       });
-
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        onLogout();
+        return;
+      }
       if (response.ok) {
         setMensagem('Mídia adicionada com sucesso!');
         setNome('');
