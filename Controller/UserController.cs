@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using obrazo.Data;
@@ -58,10 +54,10 @@ namespace obrazo.Controller
         {
             var UserIdClaim = User.FindFirst("userID")?.Value;
             if (!int.TryParse(UserIdClaim, out int intID))
-                return Unauthorized();
+                return BadRequest();
             var user = Context.Users.Find(intID);
             if (user == null)
-                return Unauthorized();
+                return NotFound();
 
             bool valid = PasswordService.VerifyPassword(changePasswordRequest.OldPassword, user.PasswordHash);
             if (!valid)
