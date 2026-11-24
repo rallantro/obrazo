@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import '../AddObra.css';
 
-function AddObra() {
+function AddObra({token}) {
   const [nome, setNome] = useState('');
   const [tipo, setTipo] = useState(0);
   const [mensagem, setMensagem] = useState('');
@@ -41,7 +41,7 @@ function AddObra() {
         setMensagem('Mídia adicionada com sucesso!');
         setNome('');
         carregarMedias();
-      } else{
+      } else {
         const msg = await response.text();
         setMensagem(msg);
       }

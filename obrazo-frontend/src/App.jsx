@@ -25,7 +25,6 @@ function App() {
   return (
     <div className="App">
       <Routes>
-        {/* Rota raiz: se não tiver token, mostra Login; se tiver, mostra Dashboard */}
         <Route
           path="/"
           element={
@@ -66,7 +65,7 @@ function App() {
             !token ? (
               <Navigate to="/" replace />
             ) : (
-              <AddObra />
+              <AddObra token={token} />
             )
           }
         />
