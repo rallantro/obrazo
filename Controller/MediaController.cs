@@ -87,7 +87,7 @@ namespace obrazo.Controller
 
         private bool ValidateDuplicate(Media media, out string errorMessage)
         {
-            if (Context.Medias.Any(x => x.Name.ToLower() == media.Name.ToLower() && x.Type == media.Type))
+            if (Context.Medias.Any(x => x.Name == media.Name && x.Type == media.Type))
             {
                 errorMessage = "Esta mídia já está cadastrada";
                 return false;
