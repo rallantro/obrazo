@@ -122,6 +122,27 @@ namespace obrazo.Controller
         }
 
         [Authorize]
+        [HttpGet("status/{status}")]
+        public IActionResult GetByStatus(int status)
+        {
+            var UserIdClaim = User.FindFirst("userID")?.Value;
+            if (!int.TryParse(UserIdClaim, out int UserId))
+                return Unauthorized();
+            if (!Enum.IsDefined(typeof(MediaStatus), status))
+            {
+                return BadRequest("Status inválido.");
+            }
+            var userMedia = Context.UserMedias.Include(um => um.Media).Where(x => x.UserId == UserId && x.Status == (MediaStatus)status).ToList();
+            string nameStatus = ((MediaStatus)status).ToString();
+            if (userMedia.Count == 0)
+                return Problem(
+                    detail: $"Você não possui nenhum(a) {nameStatus.ToLower()} armazenado(a)... :p",
+                    statusCode: StatusCodes.Status404NotFound
+                );
+            return Ok(userMedia);
+        }
+
+        [Authorize]
         [HttpPost]
         public IActionResult Post([FromBody] UserMedia novoUserMedia)
         {
