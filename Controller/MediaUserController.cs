@@ -1,9 +1,10 @@
+using System.ComponentModel;
+using System.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using obrazo.Data;
 using obrazo.Models.Entities;
 using obrazo.Models.Enum;
+using obrazo.Services.Interfaces;
 
 namespace obrazo.Controller
 {
@@ -11,92 +12,96 @@ namespace obrazo.Controller
     [Route("[controller]")]
     public class MediaUserController : ControllerBase
     {
-        private readonly AppDbContext Context;
+        private readonly IUserMediaService UserMediaService;
 
-        public MediaUserController(AppDbContext context)
+        public MediaUserController(IUserMediaService userMediaService)
         {
-            Context = context;
+            UserMediaService = userMediaService;
         }
 
         [Authorize]
         [HttpGet("{id}")]
-        public IActionResult Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
             var userIdClaim = User.FindFirst("userID")?.Value;
             if (!int.TryParse(userIdClaim, out int UserId))
                 return Unauthorized();
-            var userMedia = Context.UserMedias.Where(x => x.Id == id).Include(um => um.Media).FirstOrDefault();
-
-            if (userMedia == null)
-                return NotFound();
-            if (userMedia.UserId != UserId) return Forbid();
-            return Ok(userMedia);
+            UserMedia? result;
+            try
+            {
+                result = await UserMediaService.GetById(id, UserId);
+            }
+            catch (KeyNotFoundException argument)
+            {
+                return Problem(
+                    detail: argument.Message,
+                    statusCode: StatusCodes.Status404NotFound
+                );
+            }
+            catch (UnauthorizedAccessException argument)
+            {
+                return Problem(
+                detail: argument.Message,
+                statusCode: StatusCodes.Status403Forbidden);
+            }
+            return Ok(result);
         }
 
         [Authorize]
         [HttpGet("user")]
-        public IActionResult GetByUser()
+        public async Task<IActionResult> GetByUser()
         {
             var UserIdClaim = User.FindFirst("userID")?.Value;
             if (!int.TryParse(UserIdClaim, out int UserId))
                 return Unauthorized();
-            var userMedia = Context.UserMedias.Where(x => x.UserId == UserId).Include(um => um.Media).ToList();
-            if (userMedia.Count == 0)
+            List<UserMedia> userMedia;
+            try
+            {
+                userMedia = await UserMediaService.GetByUser(UserId);
+            }
+            catch (ArgumentException arg)
+            {
                 return Problem(
-                    detail: "Você não possui nenhuma mídia armazenada... :p",
+                    detail: arg.Message,
                     statusCode: StatusCodes.Status404NotFound
                 );
-            return Ok(userMedia);
-        }
 
-        [Authorize]
-        [HttpGet("me/title/{name}")]
-        public IActionResult GetByName(string name)
-        {
-            var UserIdClaim = User.FindFirst("userID")?.Value;
-            if (!int.TryParse(UserIdClaim, out int UserId))
-                return Unauthorized();
-            var userMedia = Context.UserMedias.Include(um => um.Media).Where(x => x.UserId == UserId && x.Media.Name.Contains(name)).ToList();
-            if (userMedia.Count == 0)
-                return Problem(
-                    detail: "Não há nenhuma obra com esse nome.",
-                    statusCode: StatusCodes.Status404NotFound
-                );
+            }
             return Ok(userMedia);
         }
 
         [Authorize]
         [HttpGet("search")]
-        public IActionResult Search([FromQuery] string? name, [FromQuery] int? type)
+        public async Task<IActionResult> Search([FromQuery] string? name, [FromQuery] int? type)
         {
             var UserIdClaim = User.FindFirst("userID")?.Value;
             if (!int.TryParse(UserIdClaim, out int UserId))
                 return Unauthorized();
-            var selectMedia = Context.UserMedias.AsQueryable().Include(um => um.Media).Where(x => x.UserId == UserId);
-            if (!string.IsNullOrWhiteSpace(name))
+            List<UserMedia> userMedia;
+            try
             {
-                selectMedia = selectMedia.Where(x => EF.Functions.Like(x.Media.Name, $"%{name}%"));
+                userMedia = await UserMediaService.Search(UserId, name, type);
             }
-            if (type != null)
+            catch (InvalidEnumArgumentException arg)
             {
-                if (!Enum.IsDefined(typeof(MediaType), type.Value))
-                {
-                    return BadRequest("Tipo de mídia inválido.");
-                }
-                selectMedia = selectMedia.Where(x => x.Media.Type == (MediaType)type);
-            }
-            var resultado = selectMedia.ToList();
-            if (resultado.Count == 0)
                 return Problem(
-                    detail: "Nenhuma obra encontrada com os critérios informados.",
+                     detail: arg.Message,
+                     statusCode: StatusCodes.Status400BadRequest
+                 );
+            }
+            catch (ArgumentException arg)
+            {
+                return Problem(
+                    detail: arg.Message,
                     statusCode: StatusCodes.Status404NotFound
                 );
-            return Ok(resultado);
+            }
+            return Ok(userMedia);
         }
 
         [Authorize]
         [HttpGet("type/{type}")]
-        public IActionResult GetByType(int type)
+        public async Task<IActionResult> GetByType(int type)
         {
             var UserIdClaim = User.FindFirst("userID")?.Value;
             if (!int.TryParse(UserIdClaim, out int UserId))
@@ -105,143 +110,146 @@ namespace obrazo.Controller
             {
                 return BadRequest("Tipo de mídia inválido.");
             }
-            var userMedia = Context.UserMedias.Include(um => um.Media).Where(x => x.UserId == UserId && x.Media.Type == (MediaType)type).ToList();
-            string nameType = ((MediaType)type).ToString();
-            if (userMedia.Count == 0)
+            List<UserMedia> userMedia;
+            try
+            {
+                userMedia = await UserMediaService.GetByType(UserId, type);
+            }
+            catch (ArgumentException arg)
+            {
                 return Problem(
-                    detail: $"Você não possui nenhum(a) {nameType.ToLower()} armazenado(a)... :p",
+                    detail: arg.Message,
                     statusCode: StatusCodes.Status404NotFound
                 );
+
+            }
             return Ok(userMedia);
         }
 
         [Authorize]
         [HttpGet("status/{status}")]
-        public IActionResult GetByStatus(int status)
+        public async Task<IActionResult> GetByStatus(int status)
         {
             var UserIdClaim = User.FindFirst("userID")?.Value;
             if (!int.TryParse(UserIdClaim, out int UserId))
                 return Unauthorized();
             if (!Enum.IsDefined(typeof(MediaStatus), status))
             {
-                return BadRequest("Status inválido.");
+                return BadRequest("Tipo de staus inválido.");
             }
-            var userMedia = Context.UserMedias.Include(um => um.Media).Where(x => x.UserId == UserId && x.Status == (MediaStatus)status).ToList();
-            string nameStatus = ((MediaStatus)status).ToString();
-            if (userMedia.Count == 0)
+            List<UserMedia> userMedia;
+            try
+            {
+                userMedia = await UserMediaService.GetByStatus(UserId, status);
+            }
+            catch (ArgumentException arg)
+            {
                 return Problem(
-                    detail: $"Você não possui nenhum(a) {nameStatus.ToLower()} armazenado(a)... :p",
+                    detail: arg.Message,
                     statusCode: StatusCodes.Status404NotFound
                 );
+            }
             return Ok(userMedia);
         }
 
         [Authorize]
         [HttpPost]
-        public IActionResult Post([FromBody] UserMedia novoUserMedia)
+        public async Task<IActionResult> Post([FromBody] UserMedia novoUserMedia)
         {
             var userIdClaim = User.FindFirst("userID")?.Value;
             if (!int.TryParse(userIdClaim, out int userId))
                 return Unauthorized("Token inválido.");
+            try
+            {
+                await UserMediaService.Create(novoUserMedia, userId);
+            }
+            catch (KeyNotFoundException arg)
+            {
+                return Problem(
+                    detail: arg.Message,
+                    statusCode: StatusCodes.Status404NotFound
+                );
+            }
+            catch (ArgumentException arg)
+            {
+                return Problem(
+                    detail: arg.Message,
+                    statusCode: StatusCodes.Status400BadRequest
+                );
+            }
+            catch (DuplicateNameException arg)
+            {
+                return Problem(
+                    detail: arg.Message,
+                    statusCode: StatusCodes.Status409Conflict
+                );
+            }
 
-            novoUserMedia.UserId = userId;
-
-            if (!ValidateExistence(novoUserMedia, out string errorMessageExistence))
-            {
-                return BadRequest(errorMessageExistence);
-            }
-            if (!ValidateDuplicate(novoUserMedia, out string errorMessage))
-            {
-                return BadRequest(errorMessage);
-            }
-            if (!ValidateUserMedia(novoUserMedia, out string errorMessageValid))
-            {
-                return BadRequest(errorMessageValid);
-            }
-            Context.UserMedias.Add(novoUserMedia);
-            Context.SaveChanges();
             return CreatedAtAction(nameof(Get), new { id = novoUserMedia.Id }, novoUserMedia);
         }
 
         [Authorize]
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] UserMedia updated)
+        public async Task<IActionResult> Put(int id, [FromBody] UserMedia updated)
         {
             var userIdClaim = User.FindFirst("userID")?.Value;
             if (!int.TryParse(userIdClaim, out int userId))
                 return Unauthorized();
-            var existing = Context.UserMedias.Find(id);
-            if (existing == null)
-                return NotFound();
-            if (existing.UserId != userId) return Forbid();
-            if (!ValidateUserMedia(updated, out string errorMessageValid))
-                return BadRequest(errorMessageValid);
-            existing.Nota = updated.Nota;
-            existing.Opiniao = updated.Opiniao;
-            existing.Status = updated.Status;
-            existing.DataAssistiu = updated.DataAssistiu;
-            Context.SaveChanges();
-            return Ok(existing);
+            try
+            {
+                await UserMediaService.Update(id, updated, userId);
+            }
+            catch (KeyNotFoundException arg)
+            {
+                return Problem(
+                    detail: arg.Message,
+                    statusCode: StatusCodes.Status404NotFound
+                );
+            }
+            catch (UnauthorizedAccessException arg)
+            {
+                return Problem(
+                    detail: arg.Message,
+                    statusCode: StatusCodes.Status403Forbidden
+                );
+            }
+            catch (ArgumentException arg)
+            {
+                return Problem(
+                    detail: arg.Message,
+                    statusCode: StatusCodes.Status400BadRequest
+                );
+            }
+
+            return Ok();
         }
 
         [Authorize]
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             var userIdClaim = User.FindFirst("userID")?.Value;
             if (!int.TryParse(userIdClaim, out int userId))
                 return Unauthorized();
-
-            var userMedia = Context.UserMedias.Find(id);
-            if (userMedia == null) return NotFound();
-            if (userMedia.UserId != userId) return Forbid();
-
-            Context.UserMedias.Remove(userMedia);
-            Context.SaveChanges();
+            try
+            {
+                await UserMediaService.Delete(id, userId);
+            }
+            catch (KeyNotFoundException arg)
+            {
+                return Problem(
+                    detail: arg.Message,
+                    statusCode: StatusCodes.Status404NotFound
+                );
+            }
+            catch (UnauthorizedAccessException arg)
+            {
+                return Problem(
+                    detail: arg.Message,
+                    statusCode: StatusCodes.Status403Forbidden
+                );
+            }
             return NoContent();
-        }
-
-        private bool ValidateExistence(UserMedia newUserMedia, out string errorMessage)
-        {
-            if (!Context.Medias.Any(m => m.Id == newUserMedia.MediaId))
-            {
-                errorMessage = "Mídia não encontrada.";
-                return false;
-            }
-            errorMessage = "";
-            return true;
-        }
-
-        private bool ValidateDuplicate(UserMedia newUserMedia, out string errorMessage)
-        {
-            if (Context.UserMedias.Any(x => x.UserId == newUserMedia.UserId && x.MediaId == newUserMedia.MediaId))
-            {
-                errorMessage = "Esta mídia já está no diário do usuário.";
-                return false;
-            }
-            errorMessage = "";
-            return true;
-        }
-
-        private bool ValidateUserMedia(UserMedia newUserMedia, out string errorMessage)
-        {
-            if (!Enum.IsDefined(typeof(MediaStatus), newUserMedia.Status))
-            {
-                errorMessage = "Status da mídia inválido.";
-                return false;
-            }
-            if (newUserMedia.Nota < 0 || newUserMedia.Nota > 5)
-            {
-                errorMessage = "A nota deve ser entre 0 e 5.";
-                return false;
-            }
-            if (newUserMedia.DataAssistiu > DateTime.Today)
-            {
-                errorMessage = "A data não pode ser no futuro.";
-                return false;
-            }
-            errorMessage = "";
-            return true;
         }
     }
 }
