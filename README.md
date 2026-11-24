@@ -19,12 +19,27 @@ O projeto nasceu de um pensamento cotidiano, a sensação de já ter visto algo,
 ---
 ### Funcionalidades
 
-Para concretizar o projeto, foram desenvolvidas as seguintes funcionalidades:
-- Gerenciamento de obras e coleções pessoais (CRUD)
-- Gerenciamento de usuários (cadastro e login).
-- Proteção de credenciais utilizando JWT e BCrypt.
+O Obrazo oferece recursos para organizar e acompanhar o consumo de obras de entretenimento:
+
+**Gerenciamento de obras**
+- Cadastro e Consulta de obras.
 - Busca e filtragem por nome e categoria.
-- Diferentes interfaces para as obras públicas e as avaliações privadas dos usuários.
+- Catálogo de obras compartilhado entre os usuários.
+
+**Coleções pessoais**
+- Cadastro, consulta, atualização e exclusão de itens da coleção pessoal.
+- Associação de obras à coleção individual de cada usuário.
+- Registro de avaliações e opiniões pessoais.
+- Acompanhamento do status de consumo.
+- Registro da data em que uma obra foi assistida.
+
+**Usuários e segurança**
+- Cadastro e autenticação de usuários.
+- Autenticação baseada em JWT.
+- Proteção de senhas utilizando hash BCrypt.
+- Controle de acesso aos dados pessoais de cada usuário.
+- Atualização da senha.
+- Validação de unicidade de nomes de usuário, sem distinção entre maiúsculas e minúsculas.
 
 ![Demonstração Dashboard](docs/imgs/dashboard.gif)
 *Dashboard do usuário*
@@ -38,55 +53,70 @@ Para concretizar o projeto, foram desenvolvidas as seguintes funcionalidades:
 ---
 ## Arquitetura
 
-O projeto utiliza uma arquitetura em camadas, separando a interface do usuário (Frontend) da lógica de negócios e persistência (Backend).
+O Obrazo utiliza uma arquitetura parcialmente organizada em camadas, buscando separar as responsabilidades entre a interface, o processamento das requisições, as regras de negócio e a persistência dos dados.
+
+O backend foi desenvolvido com ASP.NET Core e utiliza Entity Framework Core para comunicação com o banco de dados SQLite.
+
+A camada de serviços já é utilizada no gerenciamento das relações entre usuários e mídias, por meio de interfaces e implementações específicas. A expansão desse padrão para os demais controllers está prevista como parte da evolução da arquitetura.
 
 ```mermaid
 flowchart TD
-    %% Entidades Externas
-    User([Usuário])
+    React[React App]
 
-    %% Frontend
-    subgraph Front [Frontend]
-        React[React App]
-    end
-
-    %% Backend
     subgraph Back [Backend - ASP.NET Core]
-        API[API Controllers]
-        Auth[JWT + BCrypt]
-        Services[Regras de Negócio / Services]
+        Middleware[JWT Authentication Middleware]
+
+        subgraph Controllers [Controllers]
+            Media[MediaController]
+            User[UserController]
+            MediaUser[MediaUserController]
+            Auth[AuthController]
+        end
+
+        subgraph Services [Serviços]
+            Interface[IUserMediaService]
+            UserMedia[UserMediaService]
+            Token[TokenService]
+            Password[PasswordService]
+        end
+
+        Context[AppDbContext]
         EF[Entity Framework Core]
     end
 
-    %% Banco de Dados
-    subgraph Data [Persistência]
-        DB[(SQLite)]
-    end
+    DB[(SQLite)]
 
-    %% Conexões
-    User -->|Interage com| React
-    React -->|HTTP / JSON| API
-    
-    API <-->|Valida Token / Senha| Auth
-    API --> Services
-    Services --> EF
+    React <-->|HTTP / JSON| Middleware
+
+    Middleware --> Media
+    Middleware --> User
+    Middleware --> MediaUser
+    Middleware --> Auth
+
+    MediaUser --> Interface
+    Interface -.->|Implementada por| UserMedia
+    UserMedia --> Context
+
+    Media --> Context
+    User --> Context
+    Auth --> Context
+
+    Auth --> Token
+    Auth --> Password
+
+    Context --> EF
     EF <-->|Queries / Dados| DB
-
-    %% Estilização simples (opcional)
-    style User fill:#333,stroke:#333,stroke-width:2px,color:#fff
-    style React fill:#20232A,stroke:#61DAFB,stroke-width:2px,color:#fff
-    style API fill:#512BD4,stroke:#512BD4,stroke-width:2px,color:#fff
-    style Auth fill:#ff9900,stroke:#ff9900,stroke-width:2px,color:#000
-    style Services fill:#512BD4,stroke:#512BD4,stroke-width:2px,color:#fff
-    style EF fill:#512BD4,stroke:#512BD4,stroke-width:2px,color:#fff
-    style DB fill:#003B57,stroke:#003B57,stroke-width:2px,color:#fff
 ```
 
 **Fluxo da aplicação:**
-1. O usuário interage com a interface em **React**.
-2. As requisições são enviadas via HTTP para a **API em .NET 10**.
-3. A API valida o acesso via **JWT** e protege as senhas com **BCrypt**.
-4. Os dados são processados e persistidos via **EF Core** no banco **SQLite**.
+
+1. O usuário interage com a interface desenvolvida em React.
+2. O frontend envia requisições HTTP para a API desenvolvida com ASP.NET Core.
+3. O middleware de autenticação valida os tokens JWT nas requisições que exigem autorização.
+4. Os Controllers processam as requisições, utilizando Services quando aplicável ou acessando o `AppDbContext` diretamente.
+5. O Entity Framework Core realiza as operações de consulta e persistência no banco de dados SQLite.
+
+A autenticação utiliza JWT, enquanto o BCrypt é empregado no processamento e na verificação de senhas.
 
 ---
 ## Como Executar
@@ -97,7 +127,7 @@ Antes de começar, você vai precisar ter instalado em sua máquina as seguintes
 
 *   **[Git](https://git-scm.com/)** (para clonar o repositório)
 *   **[.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)** (para rodar a API e o Entity Framework)
-*   **[Node.js](https://nodejs.org/)** (versão 18.x ou superior) e **NPM** (para rodar o frontend React)
+*   **[Node.js](https://nodejs.org/)** (versão 20.19+ ou 22.12+) e **NPM** (para rodar o frontend React)
 *   Um editor de código de sua preferência, como **[Visual Studio](https://visualstudio.microsoft.com/)**, **[VS Code](https://code.visualstudio.com/)** ou **[Rider](https://www.jetbrains.com/rider/)**.
 
 > **Sobre as dependências:**
@@ -126,7 +156,7 @@ dotnet ef database update
 # Inicie o servidor
 dotnet run
 ```
-*A API estará rodando em `http://localhost:5000` (ou a porta que estiver no seu `launchSettings.json`).*
+*A API estará rodando em `http://localhost:5062` (ou a porta que estiver no seu `launchSettings.json`).*
 
 **3. Rodando o Frontend (React):**
 Abra um **novo terminal** e execute:
@@ -151,7 +181,7 @@ npm run dev
   
   <b>1. Cadastro e Proteção de Senhas (BCrypt):</b><br>
 
-  Ao se cadastrar, o usuário envia a senha em texto puro (via HTTPS). A API utiliza o algoritmo <b>BCrypt</b> para gerar um hash seguro da senha antes de salvar no banco. O BCrypt foi escolhido por aplicar um "salt" automático e ser lento por design, o que dificulta ataques de força bruta.
+  Durante o cadastro, a senha é enviada à API por meio da requisição HTTP, utilizando HTTPS quando a aplicação está configurada para comunicação segura. Antes de armazená-la, a API utiliza BCrypt para gerar um hash da senha. O BCrypt foi escolhido por aplicar um "salt" automático e ser lento por design, o que dificulta ataques de força bruta.
   
   <b>2. Validação de Dados (Data Annotations):</b><br>
 
