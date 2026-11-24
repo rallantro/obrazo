@@ -28,8 +28,8 @@ function AvaliarObra({ media, token, onClose }) {
         setSucesso("Obra adicionada ao diário!");
         setTimeout(() => onClose(), 1500)
       } else {
-        const msg = await response.text();
-        setErro(msg);
+        const msg = await response.json()
+        setErro(msg.detail);
       }
     } catch (error) {
       setErro('Erro de conexão com o servidor.');
