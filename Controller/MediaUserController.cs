@@ -176,20 +176,16 @@ namespace obrazo.Controller
             var userIdClaim = User.FindFirst("userID")?.Value;
             if (!int.TryParse(userIdClaim, out int userId))
                 return Unauthorized();
-
-
-            if (!ValidateUserMedia(updated, out string errorMessageValid))
-            {
-                return BadRequest(errorMessageValid);
-            }
             var existing = Context.UserMedias.Find(id);
-            if (existing == null) return NotFound();
+            if (existing == null)
+                return NotFound();
             if (existing.UserId != userId) return Forbid();
+            if (!ValidateUserMedia(updated, out string errorMessageValid))
+                return BadRequest(errorMessageValid);
             existing.Nota = updated.Nota;
             existing.Opiniao = updated.Opiniao;
             existing.Status = updated.Status;
             existing.DataAssistiu = updated.DataAssistiu;
-
             Context.SaveChanges();
             return Ok(existing);
         }
