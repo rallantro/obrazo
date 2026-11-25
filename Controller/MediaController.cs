@@ -1,16 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using obrazo.Data;
 using obrazo.Models.Entities;
-using obrazo.Models.Enum;
-using obrazo.Services;
 using obrazo.Services.Interfaces;
 
 namespace obrazo.Controller
