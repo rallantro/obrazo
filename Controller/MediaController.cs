@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -8,6 +10,8 @@ using Microsoft.EntityFrameworkCore;
 using obrazo.Data;
 using obrazo.Models.Entities;
 using obrazo.Models.Enum;
+using obrazo.Services;
+using obrazo.Services.Interfaces;
 
 namespace obrazo.Controller
 {
@@ -15,85 +19,96 @@ namespace obrazo.Controller
     [Route("[controller]")]
     public class MediaController : ControllerBase
     {
-        private readonly AppDbContext Context;
+        private readonly IMediaService mediaService;
 
-        public MediaController(AppDbContext context)
+        public MediaController(IMediaService _mediaService)
         {
-            Context = context;
+            mediaService = _mediaService;
         }
 
-        [HttpGet]
-        public IActionResult Get()
-        {
-            var medias = Context.Medias.ToList();
-
-            return Ok(medias);
-
-        }
 
         [Authorize]
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
-            var media = Context.Medias.Where(x => x.Id == id).FirstOrDefault();
-            if (media == null)
+            Media result;
+            try
+            {
+                result = await mediaService.GetById(id);
+            }
+            catch (KeyNotFoundException argument)
+            {
                 return Problem(
-                    detail: "Nenhuma obra encontrada com os critérios informados.",
+                    detail: argument.Message,
                     statusCode: StatusCodes.Status404NotFound
                 );
-            return Ok(media);
-
+            }
+            catch (UnauthorizedAccessException argument)
+            {
+                return Problem(
+                detail: argument.Message,
+                statusCode: StatusCodes.Status403Forbidden);
+            }
+            return Ok(result);
         }
 
         [Authorize]
         [HttpGet("search")]
-        public IActionResult Search([FromQuery] string? name, [FromQuery] int? type)
+        public async Task<IActionResult> Search([FromQuery] string? name, [FromQuery] int? type)
         {
-            var selectMedia = Context.Medias.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(name))
+            List<Media> medias;
+            try
             {
-                selectMedia = selectMedia.Where(x => EF.Functions.Like(x.Name, $"%{name}%"));
+                medias = await mediaService.Search(name, type);
             }
-            if (type != null)
+            catch (InvalidEnumArgumentException arg)
             {
-                if (!Enum.IsDefined(typeof(MediaType), type.Value))
-                {
-                    return BadRequest("Tipo de mídia inválido.");
-                }
-                selectMedia = selectMedia.Where(x => x.Type == (MediaType)type.Value);
-            }
-            var resultado = selectMedia.ToList();
-            if (resultado.Count == 0)
                 return Problem(
-                    detail: "Nenhuma obra encontrada com os critérios informados.",
+                     detail: arg.Message,
+                     statusCode: StatusCodes.Status400BadRequest
+                 );
+            }
+            catch (ArgumentException arg)
+            {
+                return Problem(
+                    detail: arg.Message,
                     statusCode: StatusCodes.Status404NotFound
                 );
-            return Ok(resultado);
+            }
+            return Ok(medias);
         }
 
         [Authorize]
         [HttpPost]
-        public IActionResult Post([FromBody] Media novaMedia)
+        public async Task<IActionResult> Post([FromBody] Media novaMedia)
         {
-            if (!ValidateDuplicate(novaMedia, out string errorMessageValid))
+            try
             {
-                return BadRequest(errorMessageValid);
+                await mediaService.Create(novaMedia);
             }
-            Context.Medias.Add(novaMedia);
-            Context.SaveChanges();
-            return CreatedAtAction(nameof(Get), new { id = novaMedia.Id }, novaMedia);
-        }
+            catch (KeyNotFoundException arg)
+            {
+                return Problem(
+                    detail: arg.Message,
+                    statusCode: StatusCodes.Status404NotFound
+                );
+            }
+            catch (ArgumentException arg)
+            {
+                return Problem(
+                    detail: arg.Message,
+                    statusCode: StatusCodes.Status400BadRequest
+                );
+            }
+            catch (DuplicateNameException arg)
+            {
+                return Problem(
+                    detail: arg.Message,
+                    statusCode: StatusCodes.Status409Conflict
+                );
+            }
 
-        private bool ValidateDuplicate(Media media, out string errorMessage)
-        {
-            if (Context.Medias.Any(x => x.Name == media.Name && x.Type == media.Type))
-            {
-                errorMessage = "Esta mídia já está cadastrada";
-                return false;
-            }
-            errorMessage = "";
-            return true;
+            return CreatedAtAction(nameof(GetById), new { id = novaMedia.Id }, novaMedia);
         }
     }
 }

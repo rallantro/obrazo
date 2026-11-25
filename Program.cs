@@ -13,6 +13,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IUserMediaService, UserMediaService>();
+builder.Services.AddScoped<IMediaService, MediaService>();
 
 builder.Services.AddControllers();
 
