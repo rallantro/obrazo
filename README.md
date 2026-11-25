@@ -76,6 +76,8 @@ flowchart TD
         subgraph Services [Serviços]
             Interface[IUserMediaService]
             UserMedia[UserMediaService]
+            InterfaceMedia[IMediaService]
+            Medias[MediaService]
             Token[TokenService]
             Password[PasswordService]
         end
@@ -96,8 +98,10 @@ flowchart TD
     MediaUser --> Interface
     Interface -.->|Implementada por| UserMedia
     UserMedia --> Context
+    Media --> InterfaceMedia
+    InterfaceMedia -.->|Implementada por| Medias
+    Medias --> Context
 
-    Media --> Context
     User --> Context
     Auth --> Context
 
