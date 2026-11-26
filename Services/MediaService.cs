@@ -59,19 +59,30 @@ namespace obrazo.Services
 
         public async Task<Media> Create(Media media)
         {
+            string validName = ValidateName(media);
+            if (!string.IsNullOrWhiteSpace(validName))
+                throw new ArgumentException(validName);
+            string validType = ValidateType(media);
+            if (!string.IsNullOrWhiteSpace(validType))
+                throw new InvalidEnumArgumentException(validType);
             string validDuplicate = await ValidateDuplicate(media, null);
             if (!string.IsNullOrWhiteSpace(validDuplicate))
                 throw new DuplicateNameException(validDuplicate);
-            Context.Medias.Add(media);
+            await Context.Medias.AddAsync(media);
             await Context.SaveChangesAsync();
             return media;
         }
 
         public async Task<bool> Update(int id, Media updated)
         {
-            var existing = await Context.Medias.FindAsync(id);
-            if (existing == null)
+            var existing = await Context.Medias.FindAsync(id) ??
                 throw new KeyNotFoundException("Mídia não encontrada.");
+            string validName = ValidateName(updated);
+            if (!string.IsNullOrWhiteSpace(validName))
+                throw new ArgumentNullException(validName);
+            string validType = ValidateType(updated);
+            if (!string.IsNullOrWhiteSpace(validType))
+                throw new InvalidEnumArgumentException(validType);
             string validDuplicate = await ValidateDuplicate(updated, id);
             if (!string.IsNullOrWhiteSpace(validDuplicate))
                 throw new DuplicateNameException(validDuplicate);
@@ -95,6 +106,22 @@ namespace obrazo.Services
             if (await Context.Medias.AnyAsync(x => x.Name == newmedia.Name && x.Type == newmedia.Type && x.Id != id))
             {
                 return "Esta mídia já existe.";
+            }
+            return "";
+        }
+        private string ValidateName(Media newMedia)
+        {
+            if (string.IsNullOrWhiteSpace(newMedia.Name))
+            {
+                return "Insira um nome válido.";
+            }
+            return "";
+        }
+        private string ValidateType(Media newMedia)
+        {
+            if (!Enum.IsDefined(typeof(MediaType), newMedia.Type))
+            {
+                return "Tipo de mídia inválido.";
             }
             return "";
         }

@@ -72,13 +72,6 @@ namespace obrazo.Controller
             {
                 await mediaService.Create(novaMedia);
             }
-            catch (KeyNotFoundException arg)
-            {
-                return Problem(
-                    detail: arg.Message,
-                    statusCode: StatusCodes.Status404NotFound
-                );
-            }
             catch (ArgumentException arg)
             {
                 return Problem(
