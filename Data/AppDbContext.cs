@@ -21,6 +21,7 @@ namespace obrazo.Data
 
             modelBuilder.Entity<User>().HasIndex(c => c.Name).IsUnique();
             modelBuilder.Entity<User>().Property(c => c.Name).UseCollation("NOCASE");
+            modelBuilder.Entity<Media>().HasIndex(c => new {c.Name, c.Type}).IsUnique();
             modelBuilder.Entity<Media>().Property(c => c.Name).UseCollation("NOCASE");
 
             modelBuilder.Entity<UserMedia>()

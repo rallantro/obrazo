@@ -33,6 +33,9 @@ namespace obrazo.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Name", "Type")
+                        .IsUnique();
+
                     b.ToTable("Medias");
                 });
 
