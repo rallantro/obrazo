@@ -35,12 +35,6 @@ namespace obrazo.Controller
                     statusCode: StatusCodes.Status404NotFound
                 );
             }
-            catch (UnauthorizedAccessException argument)
-            {
-                return Problem(
-                detail: argument.Message,
-                statusCode: StatusCodes.Status403Forbidden);
-            }
             return Ok(result);
         }
 
