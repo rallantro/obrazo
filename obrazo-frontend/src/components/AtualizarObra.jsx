@@ -37,6 +37,32 @@ function AtualizarObra({ media, token, onClose }) {
     }
   };
 
+  const handleDelete = async (x) => {
+    x.preventDefault();
+    setErro('');
+    setSucesso('');
+    if (confirm(`Deseja mesmo deletar ${Name.name} da sua coleção?`) == true) {
+      try {
+        const response = await fetch(`http://localhost:5062/MediaUser/${media.id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+        });
+        if (response.ok) {
+          setSucesso("Obra excluída.");
+          setTimeout(() => onClose(), 1500)
+        } else {
+          const msg = await response.json();
+          setErro(msg);
+        }
+      } catch (error) {
+        setErro('Erro de conexão com o servidor');
+      }
+    }
+  };
+
   const pesquisarMedia = async (id) => {
     try {
       const link = `http://localhost:5062/MediaUser/${id}`;
@@ -92,6 +118,9 @@ function AtualizarObra({ media, token, onClose }) {
 
           <button type="submit" disabled={!!sucesso}>
             {sucesso ? 'Salvando...' : 'Atualizar'}
+          </button>
+          <button type="button" className="delete-button" disabled={!!sucesso} onClick={handleDelete}>
+            {sucesso ? '...' : 'Apagar da Coleção'}
           </button>
           {erro && <div className="erro-mensagem">{erro}</div>}
           {sucesso && <div className="sucesso-mensagem">{sucesso}</div>}
