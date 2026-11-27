@@ -9,10 +9,24 @@ function AddObra({ token, onLogout }) {
 
   const carregarMedias = async () => {
     try {
-      const response = await fetch('http://localhost:5062/Media');
-      const data = await response.json();
-      setMedias(data);
+      const link = `http://localhost:5062/Media/search`;
+      const response = await fetch(link, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setMedias(data);
+        setErro(null);
+      } else if (response.status === 404) {
+        const msg = await response.json();
+        setErro(msg.detail);
+      }
     } catch (error) {
+      console.error('Erro ao carregar as obras:', error);
       if (response.status === 401) {
         localStorage.removeItem('token');
         onLogout();
