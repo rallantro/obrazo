@@ -51,8 +51,8 @@ function AddObra({ token, onLogout }) {
         setNome('');
         carregarMedias();
       } else {
-        const msg = await response.text();
-        setMensagem(msg);
+        const msg = await response.json();
+        setMensagem(msg.detail);
       }
     } catch (error) {
       console.error(error);
