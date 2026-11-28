@@ -4,6 +4,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AddObra from './pages/AddObra';
+import Profile from './pages/Profile';
 import './App.css';
 import Buscar from './pages/Buscar';
 
@@ -66,6 +67,16 @@ function App() {
               <Navigate to="/" replace />
             ) : (
               <AddObra token={token} />
+            )
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            !token ? (
+              <Navigate to="/" replace />
+            ) : (
+              <Profile token={token} />
             )
           }
         />
